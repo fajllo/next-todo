@@ -1,11 +1,31 @@
 import React from "react";
 // import { docs } from "../lib/fiebase";
-import { Input, Grid, Button, Loading } from "@nextui-org/react";
-import { collection, addDoc, doc, deleteDoc } from "firebase/firestore";
+import { Input, Grid, Button, Loading, Text, Card } from "@nextui-org/react";
+import {
+  collection,
+  addDoc,
+  doc,
+  deleteDoc,
+  getDocs,
+} from "firebase/firestore";
 import { useState, useEffect } from "react";
-import { db } from "../lib/fiebase";
+import { db, colRef } from "../lib/fiebase";
 
-function TodoList() {
+const TodoList = () => {
+  const data = null;
+  const [bookItems, setBooksItems] = useState([]);
+  useEffect(async () => {
+    data = await getDocs(colRef);
+    const books = data.docs.map(doc => {
+      return { ...doc.data(), id: doc.id };
+    });
+    setBooksItems(
+      books.map(book => {
+        return <BookItem key={book.id} book={book} />;
+      })
+    );
+  }, [data]);
+
   // const data = docs.map(doc => {
   //   return { ...doc.data(), id: doc.id };
   // });
@@ -138,6 +158,22 @@ function TodoList() {
           </Grid.Container>
         </form>
       </div>
+      <Grid.Container gap={2}>{bookItems}</Grid.Container>
+    </div>
+  );
+};
+
+function BookItem(bookItem) {
+  const { book } = bookItem;
+  return (
+    <div className="BookItem">
+      <Grid xs={12}>
+        <Card color="warning" xs={12}>
+          <Text transform="capitalize">{book.author}</Text>
+          <Text transform="capitalize">{book.title}</Text>
+          <Text transform="capitalize">id: {book.id}</Text>
+        </Card>
+      </Grid>
     </div>
   );
 }
