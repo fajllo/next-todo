@@ -9,6 +9,8 @@ import {
   onSnapshot,
   query,
   where,
+  orderBy,
+  serverTimestamp,
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db, colRef } from "../lib/fiebase";
@@ -20,7 +22,11 @@ const TodoList = () => {
   const [queryBookItems, setQueryBooksItems] = useState([]);
   useEffect(async () => {
     // query
-    const q = query(colRef, where("title", "==", "test"));
+    const q = query(
+      colRef,
+      where("title", "==", "test"),
+      orderBy("createdAt", "asc")
+    );
     queryData = onSnapshot(q, snap => {
       const books = snap.docs.map(doc => {
         return { ...doc.data(), id: doc.id };
@@ -81,6 +87,7 @@ const TodoList = () => {
       await addDoc(colRef, {
         title: inputs.title,
         author: inputs.author,
+        createdAt: serverTimestamp(),
       });
       setInputs(values => ({ ...values, title: "", author: "" }));
     } catch (e) {
