@@ -1,8 +1,9 @@
 import React from "react";
 // import { docs } from "../lib/fiebase";
-import { Input, Grid, Button } from "@nextui-org/react";
-import { getFirestore, collection, getDocs, addDoc } from "firebase/firestore";
+import { Input, Grid, Button, Loading } from "@nextui-org/react";
+import { collection, addDoc, doc, deleteDoc } from "firebase/firestore";
 import { useState, useEffect } from "react";
+import { db } from "../lib/fiebase";
 
 function TodoList() {
   // const data = docs.map(doc => {
@@ -12,25 +13,49 @@ function TodoList() {
   //   console.log(data);
   // }, [data]);
   const [inputs, setInputs] = useState({});
+  const [del, setDel] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [loadingDel, setLoadingDel] = useState(false);
   const handleChange = event => {
     const name = event.target.name;
     const value = event.target.value;
     setInputs(values => ({ ...values, [name]: value }));
   };
 
-  const handleDel = e => {
+  const handleDelChange = event => {
+    const value = event.target.value;
+    setDel(value);
+  };
+
+  const handleDel = async e => {
     e.preventDefault();
-    console.log(inputs);
+    setLoadingDel(true);
+    try {
+      const docRef = doc(db, "books", del);
+      await deleteDoc(docRef);
+      setDel("");
+    } catch (e) {
+      console.log(e);
+    }
+
+    setLoadingDel(false);
   };
 
   const handleAdd = async e => {
     e.preventDefault();
-    const colRef = collection(getFirestore(), "books");
-    await addDoc(colRef, {
-      title: inputs.title,
-      author: inputs.author,
-    });
-    setInputs(values => ({ ...values, title: "", author: "" }));
+    setLoading(true);
+    try {
+      const colRef = collection(db, "books");
+      await addDoc(colRef, {
+        title: inputs.title,
+        author: inputs.author,
+      });
+      setInputs(values => ({ ...values, title: "", author: "" }));
+    } catch (e) {
+      console.log(e);
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -64,11 +89,19 @@ function TodoList() {
                 onChange={handleChange}
               />
             </Grid>
-            <Grid>
+
+            <Grid xs={6}>
               <Button color="success" auto>
                 Add
               </Button>
             </Grid>
+            {loading ? (
+              <Grid xs={6}>
+                <Loading color="success" />
+              </Grid>
+            ) : (
+              <Grid xs={6}></Grid>
+            )}
           </Grid.Container>
         </form>
       </div>
@@ -85,14 +118,23 @@ function TodoList() {
                 label="document id"
                 placeholder="id"
                 color="error"
+                onChange={handleDelChange}
+                value={del}
               />
             </Grid>
 
-            <Grid xs={12}>
+            <Grid xs={6}>
               <Button color="error" auto>
                 Delete
               </Button>
             </Grid>
+            {loadingDel ? (
+              <Grid xs={6}>
+                <Loading color="error" />
+              </Grid>
+            ) : (
+              <Grid xs={6}></Grid>
+            )}
           </Grid.Container>
         </form>
       </div>
