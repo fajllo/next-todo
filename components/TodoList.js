@@ -7,14 +7,31 @@ import {
   doc,
   deleteDoc,
   onSnapshot,
+  query,
+  where,
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db, colRef } from "../lib/fiebase";
 
 const TodoList = () => {
   const data = null;
+  const queryData = null;
   const [bookItems, setBooksItems] = useState([]);
+  const [queryBookItems, setQueryBooksItems] = useState([]);
   useEffect(async () => {
+    // query
+    const q = query(colRef, where("title", "==", "test"));
+    queryData = onSnapshot(q, snap => {
+      const books = snap.docs.map(doc => {
+        return { ...doc.data(), id: doc.id };
+      });
+      setQueryBooksItems(
+        books.map(book => {
+          return <BookItem key={book.id} book={book} />;
+        })
+      );
+    });
+    // real time
     data = onSnapshot(colRef, snap => {
       const books = snap.docs.map(doc => {
         return { ...doc.data(), id: doc.id };
@@ -74,12 +91,16 @@ const TodoList = () => {
   };
 
   return (
-    <div className="TodoList">
-      <div className="add">
+    <div className="TodoList flex">
+      <p>
+        this is boiler plate app for next js and firebase, I used NextUI as a
+        component library but, i dont like it. Only tailwind CSS!!
+      </p>
+      <div className="add flex">
         <form onSubmit={handleAdd}>
           {" "}
           <h1>Add your to do</h1>
-          <Grid.Container gap={2}>
+          <Grid.Container gap={2} justify="center">
             <Grid xs={6}>
               <Input
                 name="title"
@@ -153,7 +174,14 @@ const TodoList = () => {
           </Grid.Container>
         </form>
       </div>
-      <Grid.Container gap={2}>{bookItems}</Grid.Container>
+      <Grid.Container gap={2}>
+        <h1>this is real time list of all items</h1>
+        {bookItems}
+      </Grid.Container>
+      <Grid.Container gap={2}>
+        <h1>this will be the query list where title == test</h1>
+        {queryBookItems}
+      </Grid.Container>
     </div>
   );
 };
@@ -164,8 +192,8 @@ function BookItem(bookItem) {
     <div className="BookItem">
       <Grid xs={12}>
         <Card color="warning" xs={12}>
-          <Text transform="capitalize">{book.author}</Text>
           <Text transform="capitalize">{book.title}</Text>
+          <Text transform="capitalize">{book.author}</Text>
           <Text transform="capitalize">id: {book.id}</Text>
         </Card>
       </Grid>
