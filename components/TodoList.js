@@ -6,7 +6,7 @@ import {
   addDoc,
   doc,
   deleteDoc,
-  getDocs,
+  onSnapshot,
 } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db, colRef } from "../lib/fiebase";
@@ -15,23 +15,18 @@ const TodoList = () => {
   const data = null;
   const [bookItems, setBooksItems] = useState([]);
   useEffect(async () => {
-    data = await getDocs(colRef);
-    const books = data.docs.map(doc => {
-      return { ...doc.data(), id: doc.id };
+    data = onSnapshot(colRef, snap => {
+      const books = snap.docs.map(doc => {
+        return { ...doc.data(), id: doc.id };
+      });
+      setBooksItems(
+        books.map(book => {
+          return <BookItem key={book.id} book={book} />;
+        })
+      );
     });
-    setBooksItems(
-      books.map(book => {
-        return <BookItem key={book.id} book={book} />;
-      })
-    );
   }, [data]);
 
-  // const data = docs.map(doc => {
-  //   return { ...doc.data(), id: doc.id };
-  // });
-  // useEffect(() => {
-  //   console.log(data);
-  // }, [data]);
   const [inputs, setInputs] = useState({});
   const [del, setDel] = useState("");
   const [loading, setLoading] = useState(false);
