@@ -1,32 +1,42 @@
 import React from "react";
-import { docs } from "../lib/fiebase";
+// import { docs } from "../lib/fiebase";
 import { Input, Grid, Button } from "@nextui-org/react";
 import { getFirestore, collection, getDocs, addDoc } from "firebase/firestore";
+import { useState, useEffect } from "react";
 
 function TodoList() {
-  let data = docs.map(doc => {
-    return { ...doc.data(), id: doc.id };
-  });
-  console.log(data);
-
-  const handleAdd = e => {
-    e.preventDefault();
-
-    const colRef = collection(getFirestore(), "books");
-    addDoc(colRef, {
-      title: "",
-      author: "",
-    });
+  // const data = docs.map(doc => {
+  //   return { ...doc.data(), id: doc.id };
+  // });
+  // useEffect(() => {
+  //   console.log(data);
+  // }, [data]);
+  const [inputs, setInputs] = useState({});
+  const handleChange = event => {
+    const name = event.target.name;
+    const value = event.target.value;
+    setInputs(values => ({ ...values, [name]: value }));
   };
+
   const handleDel = e => {
     e.preventDefault();
-    console.log("handle dell");
+    console.log(inputs);
+  };
+
+  const handleAdd = async e => {
+    e.preventDefault();
+    const colRef = collection(getFirestore(), "books");
+    await addDoc(colRef, {
+      title: inputs.title,
+      author: inputs.author,
+    });
+    setInputs(values => ({ ...values, title: "", author: "" }));
   };
 
   return (
     <div className="TodoList">
       <div className="add">
-        <form>
+        <form onSubmit={handleAdd}>
           {" "}
           <h1>Add your to do</h1>
           <Grid.Container gap={2}>
@@ -38,6 +48,8 @@ function TodoList() {
                 label="title"
                 placeholder="title"
                 color="success"
+                value={inputs.title || ""}
+                onChange={handleChange}
               />
             </Grid>
             <Grid xs={6}>
@@ -48,10 +60,12 @@ function TodoList() {
                 label="author"
                 placeholder="author"
                 color="success"
+                value={inputs.author || ""}
+                onChange={handleChange}
               />
             </Grid>
             <Grid>
-              <Button color="success" auto onSubmit={handleAdd}>
+              <Button color="success" auto>
                 Add
               </Button>
             </Grid>
@@ -59,7 +73,7 @@ function TodoList() {
         </form>
       </div>
       <div className="delete">
-        <form>
+        <form onSubmit={handleDel}>
           {" "}
           <h1>Delete your to do</h1>
           <Grid.Container gap={4} justify="center">
@@ -75,7 +89,7 @@ function TodoList() {
             </Grid>
 
             <Grid xs={12}>
-              <Button color="error" auto onSubmit={handleDel}>
+              <Button color="error" auto>
                 Delete
               </Button>
             </Grid>
